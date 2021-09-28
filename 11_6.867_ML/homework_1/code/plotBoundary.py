@@ -1,6 +1,8 @@
 import pdb
 from numpy import *
-import pylab as pl
+# import pylab as pl
+import matplotlib.pyplot as plt
+pl = plt
 
 # X is data matrix (each row is a data point)
 # Y is desired output (1 or -1)
