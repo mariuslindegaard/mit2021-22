@@ -1,5 +1,4 @@
 import plotBoundary
-# import pylab as pl
 from typing import Union, Optional
 import dataclasses
 
@@ -46,14 +45,12 @@ class LogReg:
         else:
             self.X = self.X_unmapped
 
-        print(f"X, Y shapes: {self.X.shape}, {self.Y.shape}")
-
     def train(self):
         """Train the classifier
 
         Using the training data in data/data+str(param_idx)+_train.csv"""
 
-        print('======Training======')
+        # print('======Training======')
         # Initialize weights randomly to avoid cost discontinuities at 0.
         # Probably not necessary...
         data_shape = self.X.shape
@@ -129,9 +126,10 @@ class LogReg:
         pred = LogReg._predict(w, X)
         return -np.sum(Y * np.log(pred) + (1-Y) * np.log(1-pred)) + reg_cost
 
-    def plotDecisionBoundary(self, title="DecisionBoundary"):
-        plotBoundary.plotDecisionBoundary(self.X, self.Y, self.predictLog, values=[0.1, 0.5, 0.9], title=title)
-        plt.show()
+    def plotDecisionBoundary(self, values=[0.1, 0.5, 0.9], title="DecisionBoundary"):
+        plotBoundary.plotDecisionBoundary(
+                self.X, self.Y, self.predictLog, values=values, title=title
+                )
         
 
 def _main():
@@ -144,36 +142,35 @@ def _main():
     print(lreg.testAcc())
     print(lreg.valAcc())
     lreg.plotDecisionBoundary()
+    plt.show()
 
 
 if __name__ == "__main__":
     _main()
 
-exit()
 
-# Compute algorithmic stability
-### TODO ###
+if False:
+    # Compute algorithmic stability
+    ### TODO ###
 
-# plot training results
-plotDecisionBoundary(X, Y, predictLog, [0, 0.5, 1], title = 'LR Train')
-pl.show()
+    # plot training results
+    plotDecisionBoundary(X, Y, predictLog, [0, 0.5, 1], title = 'LR Train')
+    pl.show()
 
-print('======Validation======')
-# load data from csv files
-validate = np.loadtxt('data/data'+name+'_validate.csv')
-X = validate[:, 0:2]
-Y = validate[:, 2:3]
+    print('======Validation======')
+    # load data from csv files
+    validate = np.loadtxt('data/data'+name+'_validate.csv')
+    X = validate[:, 0:2]
+    Y = validate[:, 2:3]
 
-# plot validation results
-plotDecisionBoundary(X, Y, predictLog, [0, 0.5, 1], title = 'LR Validate')
-pl.show()
+    # plot validation results
+    plotDecisionBoundary(X, Y, predictLog, [0, 0.5, 1], title = 'LR Validate')
+    pl.show()
 
 
-print('======Testing======')
-# load data from csv files
-test = np.loadtxt('data/data'+name+'_test.csv')
-X = test[:, 0:2]
-Y = (test[:, 2:3] + 1) / 2
+    print('======Testing======')
+    # load data from csv files
+    test = np.loadtxt('data/data'+name+'_test.csv')
+    X = test[:, 0:2]
+    Y = (test[:, 2:3] + 1) / 2
 
-# Compute testing accuracy of the predictions of your model
-### TODO ###
