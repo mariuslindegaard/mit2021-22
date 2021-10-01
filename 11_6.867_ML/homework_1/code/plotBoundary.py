@@ -1,4 +1,3 @@
-import pdb
 from numpy import *
 # import pylab as pl
 import matplotlib.pyplot as plt
@@ -23,6 +22,12 @@ def plotDecisionBoundary(X, Y, scoreFn, values, title = ""):
     CS = pl.contour(xx, yy, zz, values, colors = 'green', linestyles = 'solid', linewidths = 2)
     pl.clabel(CS, fontsize=9, inline=1)
     # Plot the training points
-    pl.scatter(X[:, 0], X[:, 1], c=(1.-Y).ravel(), s=50, cmap = pl.cm.cool)
+    # pl.scatter(X[:, 0], X[:, 1], c=(1.-Y).ravel(), s=50, cmap = pl.cm.cool)
+    # import pdb; pdb.set_trace()
+    X_pos = X[(Y > 1/2).ravel(), :]
+    X_neg = X[(Y < 1/2).ravel(), :]
+    pl.scatter(X_pos[:, 0], X_pos[:, 1], s=50, label="Class 1")
+    pl.scatter(X_neg[:, 0], X_neg[:, 1], s=50, label="Class 0")
     pl.title(title)
+    plt.legend()
     pl.axis('tight')

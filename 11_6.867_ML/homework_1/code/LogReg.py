@@ -136,12 +136,14 @@ def _main():
     np.random.seed(1)
 
     dataset = 2
-    lreg = LogReg(dataset, regularization=RegularizationParams(2, 0.30))
+    reg = RegularizationParams(2, 0.30)
+    lreg = LogReg(dataset, regularization=reg)
     print(lreg.train())
     print(lreg.trainAcc())
     print(lreg.testAcc())
     print(lreg.valAcc())
-    lreg.plotDecisionBoundary()
+    lreg.plotDecisionBoundary(title="Decision boundary on dataset {dataset}\nregularizer params: $\lambda="
+                                    f"{reg.lambda_:.2G}$, " r"$L_{" f"{reg.norm}" r"}$")
     plt.show()
 
 
