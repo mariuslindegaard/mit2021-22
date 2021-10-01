@@ -17,11 +17,11 @@ class RegularizationParams:
     lambda_: float
 
 class LogReg:
-    def __init__(self, param_idx: Union[int, str],
+    def __init__(self, data_idx: Union[int, str],
             regularization: Optional[RegularizationParams] = None,
             feature_map: Optional[callable] = None
             ):
-        self.param_idx = str(param_idx)
+        self.data_idx = str(data_idx)
         self.reg = regularization
         self.feature_map = feature_map
 
@@ -33,7 +33,7 @@ class LogReg:
     def _loadData(self):
         """Load and save data to train on"""
         # Load data
-        train = np.loadtxt('data/data'+self.param_idx+'_train.csv')
+        train = np.loadtxt('data/data'+self.data_idx+'_train.csv')
 
         self.X_unmapped = train[:, 0:2].copy()
         self.Y = (train[:, 2:3].copy() + 1) / 2.
@@ -48,13 +48,15 @@ class LogReg:
     def train(self):
         """Train the classifier
 
-        Using the training data in data/data+str(param_idx)+_train.csv"""
+        Using the training data in data/data+str(data_idx)+_train.csv"""
 
         # print('======Training======')
         # Initialize weights randomly to avoid cost discontinuities at 0.
         # Probably not necessary...
         data_shape = self.X.shape
-        w = np.random.normal(size=(1+data_shape[1],)) 
+        w = np.random.normal(0, 0.01, size=(1+data_shape[1],)) 
+
+
 
         # Minimize and get solution
         sol = scipy.optimize.minimize(LogReg._cost, w,
@@ -65,11 +67,17 @@ class LogReg:
         
     def trainAcc(self):
         """Get the training accuracy"""
+        if self.w is None:
+            raise TypeError(f"The parameters w are None,"
+                            "has the model been trained yet?")
         return self._accuracy(self.w, self.X, self.Y)
 
     def testAcc(self):
         """Load test-data and get accuracy"""
-        test = np.loadtxt('data/data'+self.param_idx+'_test.csv')
+        if self.w is None:
+            raise TypeError(f"The parameters w are None,"
+                            "has the model been trained yet?")
+        test = np.loadtxt('data/data'+self.data_idx+'_test.csv')
         X_unmapped = test[:, 0:2].copy()
         Y = (test[:, 2:3].copy() + 1) / 2.
         Y = Y.flatten()
@@ -84,8 +92,11 @@ class LogReg:
 
     def valAcc(self):
         """Load validation data and get accuracy"""
+        if self.w is None:
+            raise TypeError(f"The parameters w are None,"
+                            "has the model been trained yet?")
         # Load data
-        test = np.loadtxt('data/data'+self.param_idx+'_validate.csv')
+        test = np.loadtxt('data/data'+self.data_idx+'_validate.csv')
         X_unmapped = test[:, 0:2].copy()
         Y = (test[:, 2:3].copy() + 1) / 2.
         Y = Y.flatten()
@@ -112,9 +123,12 @@ class LogReg:
     def predictLog(self, x):
         """Predict a value for a single datapoint x or an array X"""
         if len(x.shape) == 1 or x.shape[1] == 1:
-            return LogReg._predict(self.w, x.reshape((1, -1))).flatten()
-        else:
-            return LogReg._predict(self.w, x)
+            x = x.reshape((1, -1))
+
+        if self.feature_map:
+            x = self.feature_map(x)
+
+        return LogReg._predict(self.w, x)
 
     @staticmethod
     def _cost(w, X, Y, reg: Optional[RegularizationParams]):
@@ -126,9 +140,30 @@ class LogReg:
         pred = LogReg._predict(w, X)
         return -np.sum(Y * np.log(pred) + (1-Y) * np.log(1-pred)) + reg_cost
 
-    def plotDecisionBoundary(self, values=[0.1, 0.5, 0.9], title="DecisionBoundary"):
+    def loadData(self, data: str):
+        """Load data and apply feature map to X
+
+        returns phi(X), Y, X_unmapped"""
+        data_arr = np.loadtxt('data/data'+self.data_idx+'_validate.csv')
+        X_unmapped = data_arr[:, 0:2].copy()
+        Y = (data_arr[:, 2:3].copy() + 1) / 2.
+        Y = Y.flatten()
+
+        # Apply feature map
+        if self.feature_map:
+            X = self.feature_map(X_unmapped)
+        else:
+            X = X_unmapped
+
+        return X, Y, X_unmapped
+
+    def plotDecisionBoundary(self, data='train', values=[0.1, 0.5, 0.9], title="DecisionBoundary"):
+        assert data in ('train', 'test', 'validate')
+
+        X, Y, X_unmapped = self.loadData(data)
+        
         plotBoundary.plotDecisionBoundary(
-                self.X, self.Y, self.predictLog, values=values, title=title
+                X_unmapped, Y, self.predictLog, values=values, title=title
                 )
         
 
